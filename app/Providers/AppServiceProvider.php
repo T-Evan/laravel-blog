@@ -28,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
     {
         ini_set('memory_limit', "256M");
         //分配前台通用的数据
+	\URL::forceScheme('https');
         view()->composer('home/*', function($view){
             $category = Cache::remember('common:category', 10080, function () {
                 // 获取分类导航

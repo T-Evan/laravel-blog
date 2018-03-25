@@ -174,7 +174,7 @@
         <footer id="b-foot" class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
             <ul>
                 <li class="text-center">
-                    本博客使用免费开源的 <a rel="nofollow" href="https://github.com/baijunyao/laravel-bjyblog" target="_blank">laravel-bjyblog</a> {{ config('bjyblog.version') }}-{{ config('bjyblog.branch') }} 搭建 © 2014-2018 {{ parse_url(config('app.url'))['host'] }} 版权所有 @if(!empty($config['WEB_ICP_NUMBER'])) ICP证：{{ $config['WEB_ICP_NUMBER'] }} @endif
+                   © 2014-2018 {{ parse_url(config('app.url'))['host'] }} 版权所有 @if(!empty($config['WEB_ICP_NUMBER'])) ICP证：{{ $config['WEB_ICP_NUMBER'] }} @endif
                 </li>
                 <li class="text-center">
                     @if(!empty($config['ADMIN_EMAIL']))
@@ -205,9 +205,11 @@
                     <li class="col-xs-6 col-md-4 col-lg-4 b-login-img">
                         <a href="{{ url('auth/oauth/redirectToProvider/qq') }}"><img src="{{ asset('images/home/qq-login.png') }}" alt="QQ登录" title="QQ登录"></a>
                     </li>
+<!-->
                     <li class="col-xs-6 col-md-4 col-lg-4 b-login-img">
                         <a href="{{ url('auth/oauth/redirectToProvider/weibo') }}"><img src="{{ asset('images/home/sina-login.png') }}" alt="微博登录" title="微博登录"></a>
                     </li>
+<!-->
                     <li class="col-xs-6 col-md-4 col-lg-4 b-login-img">
                         <a href="{{ url('auth/oauth/redirectToProvider/github') }}"><img src="{{ asset('images/home/github-login.jpg') }}" alt="github登录" title="github登录"></a>
                     </li>
