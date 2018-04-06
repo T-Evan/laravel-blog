@@ -1,26 +1,9 @@
-[创建 QQ 群及捐赠渠道](https://baijunyao.com/article/124)  
 
-## 链接
-- 博客：[http://baijunyao.com](http://baijunyao.com)   
-- github：[https://github.com/baijunyao/laravel-bjyblog](https://github.com/baijunyao/laravel-bjyblog)   
-- 码云：[https://gitee.com/baijunyao/laravel-bjyblog](https://gitee.com/baijunyao/laravel-bjyblog)    
+- 博客：[https://blog.uliuli.fun](https://blog.uliuli.fun)   
 
 ## 简介
-这个项目是把 [thinkphp-bjyblog](https://github.com/baijunyao/thinkphp-bjyblog) 用 laravel 框架重构后的产物；  
+项目基于 [laravel-bjyblog](https://github.com/baijunyao/laravel-bjyblog) ；  
 
-下图中的[白俊遥博客](https://baijunyao.com)即是使用 laravel-bjyblog 开发的个人博客
-![laravel-bjyblog](https://baijunyao.com/uploads/article/20171210/5a2d533982e36.jpg)  
-
-## 下载安装
-如果没有搭建环境： [宝塔搭建laravel所需要的lnmp环境linux-nginx-mysql-php-composer-git](https://baijunyao.com/article/149)  
-如果不熟悉laravel项目的安装使用： [如何正确的下载安装使用别人的laravel项目？](https://baijunyao.com/article/148)  
-针对博客的说明：[开源项目系列之laravel-bjyblog博客](https://baijunyao.com/article/129)  
-最后需要初始化全文搜索的索引；  
-```bash
-php artisan scout:import "App\Models\Article"
-```
-关于全文搜索具体的可以查看文章；  
-[laravel下TNTSearch+jieba-php实现全文搜索](https://baijunyao.com/article/154)
 ## 项目介绍
 1. 纯手工前台响应式页面布局适配PC、平板、手机；
 2. 带表情的ajax无限级评论系统；
@@ -30,22 +13,6 @@ php artisan scout:import "App\Models\Article"
 
 ## 版权
 项目使用 MIT 协议；免费开源可随意使用；
-
-## 使用本项目搭建的博客
-- [白俊遥博客](https://baijunyao.com)  
-- [韩佳鑫博客](https://www.hanjiaxin.com)  
-- [Sails博客](https://smile.sails.site)  
-- [義往昔博客](http://www.maocaoying.com)  
-- [Alan博客](http://blog.taobaoroom.cn)  
-欢迎提交PR或者告诉我来收录你的网站；  
-
-### 主要贡献者
-- [韩槑槑](https://github.com/Han-MeiM)
-
-### 分支说明
-- develop: 在此分支上开发新功能
-- test: 我博客使用此分支用于测试新功能
-- master: 经过测试的的稳定代码
 
 ## 更新记录
 #### v5.5.1.3 (2018-05-3)
