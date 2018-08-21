@@ -15,9 +15,23 @@ class CommentController extends Controller
      * @param Comment $commentModel
      * @return mixed
      */
-    public function index(Comment $commentModel)
+    public function index(Request $request)
     {
-        $data = $commentModel->getAdminList();
+        $wd = $request->input('wd');
+        $data = Comment::with([
+                'article' => function ($query) {
+                    return $query->select('id', 'title');
+                },
+                'oauthUser' => function ($query) {
+                    return $query->select('id', 'name');
+                }
+            ])
+            ->when($wd, function ($query) use ($wd) {
+                return $query->where('content', 'like', "%$wd%");
+            })
+            ->orderBy('comments.created_at', 'desc')
+            ->withTrashed()
+            ->paginate(15);
         $assign = compact('data');
         return view('admin.comment.index', $assign);
     }

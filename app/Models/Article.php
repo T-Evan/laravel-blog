@@ -55,7 +55,7 @@ class Article extends Base
      * @param array $data
      * @return bool|mixed
      */
-    public function storeData($data)
+    public function storeData($data, $flash = true)
     {
         // 如果没有描述;则截取文章内容的前200字作为描述
         if (empty($data['description'])) {
@@ -76,7 +76,7 @@ class Article extends Base
         $tag_ids = $data['tag_ids'];
         unset($data['tag_ids']);
         //添加数据
-        $result = parent::storeData($data);
+        $result = parent::storeData($data, $flash);
         if ($result) {
             // 给文章添加标签
             $articleTag = new ArticleTag();
@@ -97,7 +97,7 @@ class Article extends Base
     public function getCover($content, $except = [])
     {
         // 获取文章中的全部图片
-        preg_match_all('/!\[.*?\]\((\S*).*\)/i', $content, $images);
+        preg_match_all('/!\[.*?\]\((\S*(?<=png|gif|jpg|jpeg)).*?\)/i', $content, $images);
         if (empty($images[1])) {
             $cover = 'uploads/article/default.jpg';
         } else {
@@ -116,6 +116,36 @@ class Article extends Base
             }
         }
         return $cover;
+    }
+
+    /**
+     * 搜索文章获取文章id
+     *
+     * @param $wd
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function searchArticleGetId($wd)
+    {
+        // 如果 SCOUT_DRIVER 为 null 则使用 sql 搜索
+        if (is_null(env('SCOUT_DRIVER'))) {
+            $id = Article::where('title', 'like', "%$wd%")
+                ->orWhere('description', 'like', "%$wd%")
+                ->orWhere('markdown', 'like', "%$wd%")
+                ->pluck('id');
+            return $id;
+        }
+
+        // 如果全文搜索出错则降级使用 sql like
+        try{
+            $id = Article::search($wd)->keys();
+        } catch (\Exception $e) {
+            $id = Article::where('title', 'like', "%$wd%")
+                ->orWhere('description', 'like', "%$wd%")
+                ->orWhere('markdown', 'like', "%$wd%")
+                ->pluck('id');
+        }
+        return $id;
     }
 
 }

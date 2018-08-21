@@ -5,25 +5,26 @@ namespace App\Http\Controllers\Home;
 use App\Http\Requests\Comment\Store;
 use App\Models\Category;
 use App\Models\Article;
-use App\Models\ArticleTag;
 use App\Models\Chat;
 use App\Models\Comment;
-use App\Models\Config;
 use App\Models\OauthUser;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Cache;
+use App;
+use Agent;
+use Symfony\Component\Debug\Exception\FatalThrowableError;;
 
 class IndexController extends Controller
 {
     /**
      * 首页
      *
-     * @param Article $articleModel
-     * @return mixed
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @throws \Exception
      */
-    public function index(Article $articleModel)
+    public function index()
 	{
 	    // 获取文章列表数据
         $article = Article::select('id', 'category_id', 'title', 'author', 'description', 'cover', 'created_at')
@@ -49,12 +50,13 @@ class IndexController extends Controller
      * 文章详情
      *
      * @param         $id
-     * @param Article $articleModel
+     * @param Request $request
      * @param Comment $commentModel
      *
-     * @return $this
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|void
+     * @throws \Exception
      */
-    public function article($id, Request $request, Article $articleModel, Comment $commentModel)
+    public function article($id, Request $request, Comment $commentModel)
     {
         // 获取文章数据
         $data = Article::with(['category', 'tags'])->find($id);
@@ -70,16 +72,14 @@ class IndexController extends Controller
         }
 
         // 获取上一篇
-        $prev = $articleModel
-            ->select('id', 'title')
+        $prev = Article::select('id', 'title')
             ->orderBy('created_at', 'asc')
             ->where('id', '>', $id)
             ->limit(1)
             ->first();
 
         // 获取下一篇
-        $next = $articleModel
-            ->select('id', 'title')
+        $next = Article::select('id', 'title')
             ->orderBy('created_at', 'desc')
             ->where('id', '<', $id)
             ->limit(1)
@@ -93,13 +93,13 @@ class IndexController extends Controller
     }
 
     /**
-     * 获取栏目下的文章
+     * 获取分类下的文章
      *
-     * @param Article $articleModel
      * @param $id
-     * @return mixed
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|void
      */
-    public function category(Article $articleModel, $id)
+    public function category($id)
     {
         // 获取分类数据
         $category = Category::select('id', 'name', 'keywords', 'description')
@@ -144,10 +144,10 @@ class IndexController extends Controller
      * 获取标签下的文章
      *
      * @param $id
-     * @param Article $articleModel
-     * @return mixed
+     *
+     * @return \Illuminate\Contracts\View\Factory
      */
-    public function tag($id, Article $articleModel)
+    public function tag($id)
     {
         // 获取标签
         $tag = Tag::select('id', 'name')->where('id', $id)->first();
@@ -208,7 +208,11 @@ class IndexController extends Controller
     /**
      * 文章评论
      *
-     * @param Comment $commentModel
+     * @param Store     $request
+     * @param Comment   $commentModel
+     * @param OauthUser $oauthUserModel
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function comment(Store $request, Comment $commentModel, OauthUser $oauthUserModel)
     {
@@ -229,7 +233,7 @@ class IndexController extends Controller
             session(['user.email' => $email]);
         }
         // 存储评论
-        $id = $commentModel->storeData($data);
+        $id = $commentModel->storeData($data, false);
         // 更新缓存
         Cache::forget('common:newComment');
         return ajax_return(200, ['id' => $id]);
@@ -251,16 +255,22 @@ class IndexController extends Controller
      * 搜索文章
      *
      * @param Request $request
-     * @param Article $articleModel
      *
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function search(Request $request){
+    public function search(Request $request, Article $articleModel){
+        // 禁止蜘蛛抓取搜索页
+        if (Agent::isRobot()) {
+            abort(404);
+        }
+
         $wd = clean($request->input('wd'));
-        $raw = Article::search($wd)->raw();
+
+        $id = $articleModel->searchArticleGetId($wd);
+
         // 获取文章列表数据
         $article = Article::select('id', 'category_id', 'title', 'author', 'description', 'cover', 'created_at')
-            ->whereIn('id', $raw['ids'])
+            ->whereIn('id', $id)
             ->orderBy('created_at', 'desc')
             ->with(['category', 'tags'])
             ->paginate(10);
@@ -277,6 +287,36 @@ class IndexController extends Controller
             'head' => $head
         ];
         return view('home.index.index', $assign);
+    }
+
+    /**
+     * feed
+     *
+     * @return \Illuminate\Support\Facades\View
+     */
+    public function feed()
+    {
+        // 获取文章
+        $article = Cache::remember('feed:article', 10080, function () {
+            return Article::select('id', 'author', 'title', 'description', 'html', 'created_at')
+                ->latest()
+                ->get();
+        });
+        $feed = App::make("feed");
+        $feed->title = '白俊遥';
+        $feed->description = '白俊遥博客';
+        $feed->logo = 'https://baijunyao.com/uploads/avatar/1.jpg';
+        $feed->link = url('feed');
+        $feed->setDateFormat('carbon');
+        $feed->pubdate = $article->first()->created_at;
+        $feed->lang = 'zh-CN';
+        $feed->ctype = 'application/xml';
+
+        foreach ($article as $v)
+        {
+            $feed->add($v->title, $v->author, url('article', $v->id), $v->created_at, $v->description);
+        }
+        return $feed->render('atom');
     }
 
     /**

@@ -14,6 +14,25 @@ use GuzzleHttp\Exception\ClientException;
 class OAuthController extends Controller
 {
     /**
+     * OAuthController constructor.
+     *
+     * @param Request $request
+     */
+    public function __construct(Request $request)
+    {
+        $service = $request->route('service');
+        // 因为发现有恶意访问回调地址的情况 此处限制允许使用的第三方登录方式
+        $type = [
+            'qq',
+            'weibo',
+            'github'
+        ];
+        if (!empty($service) && !in_array($service, $type)) {
+            return abort(404);
+        }
+    }
+
+    /**
      * oauth跳转
      *
      * @param Request $request
@@ -76,7 +95,7 @@ class OAuthController extends Controller
                 'login_times' => $oldUserData->login_times+1,
             ];
             // 更新数据
-            $oauthUserModel->updateData($editMap, $editData);
+            $oauthUserModel->updateData($editMap, $editData, false);
             // 组合session中要用到的数据
             $sessionData['user']['id'] = $userId;
             $sessionData['user']['email'] = $oldUserData->email;
@@ -93,7 +112,7 @@ class OAuthController extends Controller
                 'email' => ''
             ];
             // 新增数据
-            $userId = $oauthUserModel->storeData($data);
+            $userId = $oauthUserModel->storeData($data, false);
             // 组合头像地址
             $avatarPath = '/uploads/avatar/'.$userId.'.jpg';
             // 更新头像
@@ -103,7 +122,7 @@ class OAuthController extends Controller
             $editData = [
                 'avatar' => $avatarPath
             ];
-            $oauthUserModel->updateData($editMap, $editData);
+            $oauthUserModel->updateData($editMap, $editData, false);
             // 组合session中要用到的数据
             $sessionData['user']['id'] = $userId;
             $sessionData['user']['email'] = '';

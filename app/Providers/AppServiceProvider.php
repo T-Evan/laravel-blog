@@ -4,10 +4,13 @@ namespace App\Providers;
 
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\Chat;
 use App\Models\Comment;
 use App\Models\Config;
 use App\Models\FriendshipLink;
 use App\Models\GitProject;
+use App\Models\Nav;
+use App\Models\OauthUser;
 use App\Models\Tag;
 use File;
 use Cache;
@@ -61,13 +64,53 @@ class AppServiceProvider extends ServiceProvider
                     ->get();
             });
 
+            $nav = Cache::remember('common:nav', 10080, function () {
+                // 获取菜单
+                return Nav::select('name', 'url')
+                    ->orderBy('sort')
+                    ->get();
+            });
+
+            // 分配数据
+            $assign = compact('category', 'tag', 'topArticle', 'newComment', 'friendshipLink', 'nav');
+            $view->with($assign);
+        });
+
+        // 开源项目数据
+        view()->composer(['layouts/home', 'home/index/git'], function($view){
             $gitProject = Cache::remember('common:gitProject', 10080, function () {
                 // 获取开源项目
                 return GitProject::select('name', 'type')->orderBy('sort')->get();
             });
+            // 分配数据
+            $assign = compact('gitProject');
+            $view->with($assign);
+        });
+
+        // 获取各种统计
+        view()->composer(['layouts/home', 'admin/index/index'], function($view){
+            $articleCount = Cache::remember('count:article', 10080, function () {
+                // 统计文章总数
+                return Article::count('id');
+            });
+
+            $commentCount = Cache::remember('count:comment', 10080, function () {
+                // 统计评论总数
+                return Comment::count('id');
+            });
+
+            $chatCount = Cache::remember('count:chat', 10080, function () {
+                // 统计随言碎语总数
+                return Chat::count('id');
+            });
+
+            $oauthUserCount = Cache::remember('count:oauthUser', 10080, function () {
+                // 统计用户总数
+                return OauthUser::count('id');
+            });
 
             // 分配数据
-            $assign = compact('category', 'tag', 'topArticle', 'newComment', 'friendshipLink', 'gitProject');
+            $assign = compact('articleCount', '', 'commentCount', 'chatCount', 'oauthUserCount');
             $view->with($assign);
         });
 

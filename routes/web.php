@@ -31,6 +31,8 @@ Route::group(['namespace' => 'Home'], function () {
     Route::get('checkLogin', 'IndexController@checkLogin');
     // 搜索文章
     Route::get('search', 'IndexController@search');
+    // feed
+    Route::get('feed', 'IndexController@feed');
     // 用于测试
     Route::get('test', 'IndexController@test');
 });
@@ -246,6 +248,26 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'admi
         Route::get('restore/{id}', 'GitProjectController@restore');
         // 彻底删除开源项目
         Route::get('forceDelete/{id}', 'GitProjectController@forceDelete');
+    });
+
+    // 菜单管理
+    Route::group(['prefix' => 'nav'], function () {
+        // 菜单列表
+        Route::get('index', 'NavController@index');
+        // 添加菜单
+        Route::get('create', 'NavController@create');
+        Route::post('store', 'NavController@store');
+        // 编辑菜单
+        Route::get('edit/{id}', 'NavController@edit');
+        Route::post('update/{id}', 'NavController@update');
+        // 排序
+        Route::post('sort', 'NavController@sort');
+        // 删除菜单
+        Route::get('destroy/{id}', 'NavController@destroy');
+        // 恢复删除的菜单
+        Route::get('restore/{id}', 'NavController@restore');
+        // 彻底删除菜单
+        Route::get('forceDelete/{id}', 'NavController@forceDelete');
     });
 });
 

@@ -6,15 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <!-- Bootstrap -->
-    <link href="{{ asset('statics/gentelella/vendors/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="{{ asset('statics/font-awesome-4.7.0/css/font-awesome.min.css') }}" rel="stylesheet">
-    <!-- NProgress -->
-    <link href="{{ asset('statics/gentelella/vendors/nprogress/nprogress.css') }}" rel="stylesheet">
-
-    <!-- Custom Theme Style -->
-    <link href="{{ asset('statics/gentelella/build/css/custom.min.css') }}" rel="stylesheet">
+    <link href="{{ mix('css/admin.css') }}" rel="stylesheet">
     @yield('css')
 </head>
 <body class="nav-md">
@@ -54,9 +46,10 @@
                                 </ul>
                             </li>
                             <li>
-                                <a><i class="fa fa-th"></i> 分类管理 <span class="fa fa-chevron-down"></span></a>
+                                <a><i class="fa fa-th"></i> 分类菜单 <span class="fa fa-chevron-down"></span></a>
                                 <ul class="nav child_menu">
-                                    <li><a href="{{ url('admin/category/index') }}">分类列表</a></li>
+                                    <li><a href="{{ url('admin/category/index') }}">分类管理</a></li>
+                                    <li><a href="{{ url('admin/nav/index') }}">菜单管理</a></li>
                                 </ul>
                             </li>
                             <li>
@@ -157,12 +150,14 @@
 
                     <div class="title_right">
                         <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Search for...">
-                    <span class="input-group-btn">
-                      <button class="btn btn-default" type="button">Go!</button>
-                    </span>
-                            </div>
+                            <form>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Search for..." name="wd" value="{{ request()->input('wd') }}">
+                                    <span class="input-group-btn">
+                                      <button class="btn btn-default" type="button">Go!</button>
+                                    </span>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -186,19 +181,7 @@
     </div>
 </div>
 
-
-
-<!-- jQuery -->
-<script src="{{ asset('statics/gentelella/vendors/jquery/dist/jquery.min.js') }}"></script>
-<!-- Bootstrap -->
-<script src="{{ asset('statics/gentelella/vendors/bootstrap/dist/js/bootstrap.min.js') }}"></script>
-<!-- FastClick -->
-<script src="{{ asset('statics/gentelella/vendors/fastclick/lib/fastclick.js') }}"></script>
-<!-- NProgress -->
-<script src="{{ asset('statics/gentelella/vendors/nprogress/nprogress.js') }}"></script>
-
-<!-- Custom Theme Scripts -->
-<script src="{{ asset('statics/gentelella/build/js/custom.min.js') }}"></script>
+<script src="{{ mix('js/admin.js') }}"></script>
 <script>
     $(function () {
         $.ajaxSetup({
