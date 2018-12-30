@@ -30,11 +30,16 @@ Route::group(['namespace' => 'Home'], function () {
     // 检测是否登录
     Route::get('checkLogin', 'IndexController@checkLogin');
     // 搜索文章
-    Route::get('search', 'IndexController@search');
+    Route::post('search', 'IndexController@search');
     // feed
     Route::get('feed', 'IndexController@feed');
     // 用于测试
     Route::get('test', 'IndexController@test');
+    // 推荐博客
+    Route::prefix('site')->group(function () {
+        Route::get('/', 'SiteController@index');
+        Route::post('store', 'SiteController@store')->middleware('home.auth', 'clean.xss');;
+    });
 });
 
 // Home模块下 三级模式
@@ -69,13 +74,13 @@ Route::group(['namespace' => 'Auth', 'prefix' => 'auth'], function () {
 
 // 后台登录页面
 Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
+    Route::redirect('/', url('admin/login/index'));
     Route::group(['prefix' => 'login'], function () {
         // 登录页面
         Route::get('index', 'LoginController@index')->middleware('admin.login');
         // 退出
         Route::get('logout', 'LoginController@logout');
     });
-
 });
 
 
@@ -203,6 +208,26 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'admi
         Route::get('forceDelete/{id}', 'FriendshipLinkController@forceDelete');
     });
 
+    // 推荐博客管理
+    Route::group(['prefix' => 'site'], function () {
+        // 推荐博客列表
+        Route::get('index', 'SiteController@index');
+        // 添加推荐博客
+        Route::get('create', 'SiteController@create');
+        Route::post('store', 'SiteController@store');
+        // 编辑推荐博客
+        Route::get('edit/{id}', 'SiteController@edit');
+        Route::post('update/{id}', 'SiteController@update');
+        // 排序
+        Route::post('sort', 'SiteController@sort');
+        // 删除推荐博客
+        Route::get('destroy/{id}', 'SiteController@destroy');
+        // 恢复删除的推荐博客
+        Route::get('restore/{id}', 'SiteController@restore');
+        // 彻底删除推荐博客
+        Route::get('forceDelete/{id}', 'SiteController@forceDelete');
+    });
+
     // 随言碎语管理
     Route::group(['prefix' => 'chat'], function () {
         // 随言碎语列表
@@ -223,8 +248,17 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'admi
 
     // 系统设置
     Route::group(['prefix' => 'config'], function () {
-        // 编辑配置项
+        // 编辑配置项页面
         Route::get('edit', 'ConfigController@edit');
+        // 编辑邮箱配置页面
+        Route::get('email', 'ConfigController@email');
+        // 编辑 oauth 配置页面
+        Route::get('oauth', 'ConfigController@oauth');
+        // 编辑 qq 群配置页面
+        Route::get('qqQun', 'ConfigController@qqQun');
+        // 编辑备份配置页面
+        Route::get('backup', 'ConfigController@backup');
+        // 编辑配置
         Route::post('update', 'ConfigController@update');
         // 清空各种缓存
         Route::get('clear', 'ConfigController@clear');

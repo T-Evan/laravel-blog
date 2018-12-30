@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers\Home;
 
-use App\Http\Requests\Comment\Store;
-use App\Models\Category;
-use App\Models\Article;
+use App;
+use Cache;
+use Agent;
+use App\Models\Tag;
 use App\Models\Chat;
+use App\Models\Article;
+use App\Models\Category;
 use App\Models\Comment;
 use App\Models\OauthUser;
-use App\Models\Tag;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Cache;
-use App;
-use Agent;
-use Symfony\Component\Debug\Exception\FatalThrowableError;;
+use App\Http\Requests\Comment\Store;
 
 class IndexController extends Controller
 {
@@ -27,15 +26,18 @@ class IndexController extends Controller
     public function index()
 	{
 	    // 获取文章列表数据
-        $article = Article::select('id', 'category_id', 'title', 'author', 'description', 'cover', 'created_at')
+        $article = Article::select(
+                'id', 'category_id', 'title',
+                'author', 'description', 'cover',
+                'is_top', 'created_at'
+            )
             ->orderBy('created_at', 'desc')
             ->with(['category', 'tags'])
             ->paginate(10);
-        $config = cache('config');
         $head = [
-            'title' => $config->get('WEB_TITLE'),
-            'keywords' => $config->get('WEB_KEYWORDS'),
-            'description' => $config->get('WEB_DESCRIPTION'),
+            'title' => config('bjyblog.head.title'),
+            'keywords' => config('bjyblog.head.keywords'),
+            'description' => config('bjyblog.head.description'),
         ];
         $assign = [
             'category_id' => 'index',
@@ -73,20 +75,21 @@ class IndexController extends Controller
 
         // 获取上一篇
         $prev = Article::select('id', 'title')
-            ->orderBy('created_at', 'asc')
-            ->where('id', '>', $id)
-            ->limit(1)
-            ->first();
-
-        // 获取下一篇
-        $next = Article::select('id', 'title')
             ->orderBy('created_at', 'desc')
             ->where('id', '<', $id)
             ->limit(1)
             ->first();
 
+        // 获取下一篇
+        $next = Article::select('id', 'title')
+            ->orderBy('created_at', 'asc')
+            ->where('id', '>', $id)
+            ->limit(1)
+            ->first();
+
         // 获取评论
         $comment = $commentModel->getDataByArticleId($id);
+        // p($comment);die;
         $category_id = $data->category->id;
         $assign = compact('category_id', 'data', 'prev', 'next', 'comment');
         return view('home.index.article', $assign);
@@ -218,9 +221,9 @@ class IndexController extends Controller
     {
         $data = $request->only('content', 'article_id', 'pid');
         // 获取用户id
-        $userId = session('user.id');
+        $userId = auth()->guard('oauth')->user()->id;
         // 如果用户输入邮箱；则将邮箱记录入oauth_user表中
-        $email = $request->input('email');
+        $email = $request->input('email', '');
         if (filter_var($email, FILTER_VALIDATE_EMAIL) !== false) {
             // 修改邮箱
             $oauthUserMap = [
@@ -230,7 +233,6 @@ class IndexController extends Controller
                 'email' => $email
             ];
             $oauthUserModel->updateData($oauthUserMap, $oauthUserData);
-            session(['user.email' => $email]);
         }
         // 存储评论
         $id = $commentModel->storeData($data, false);
@@ -244,10 +246,10 @@ class IndexController extends Controller
      */
     public function checkLogin()
     {
-        if (empty(session('user.id'))) {
-            return 0;
-        } else {
+        if (auth()->guard('oauth')->check()) {
             return 1;
+        } else {
+            return 0;
         }
     }
 
@@ -269,7 +271,11 @@ class IndexController extends Controller
         $id = $articleModel->searchArticleGetId($wd);
 
         // 获取文章列表数据
-        $article = Article::select('id', 'category_id', 'title', 'author', 'description', 'cover', 'created_at')
+        $article = Article::select(
+                'id', 'category_id', 'title',
+                'author', 'description', 'cover',
+                'is_top', 'created_at'
+            )
             ->whereIn('id', $id)
             ->orderBy('created_at', 'desc')
             ->with(['category', 'tags'])
@@ -286,7 +292,10 @@ class IndexController extends Controller
             'title' => $wd,
             'head' => $head
         ];
-        return view('home.index.index', $assign);
+
+        // 增加 X-Robots-Tag 用于禁止搜搜引擎抓取搜索结果页面 防止利用搜索结果页生成恶意广告
+        return response()->view('home.index.index', $assign)
+            ->header('X-Robots-Tag', 'noindex');
     }
 
     /**

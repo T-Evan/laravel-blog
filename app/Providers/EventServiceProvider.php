@@ -17,9 +17,12 @@ class EventServiceProvider extends ServiceProvider
             'SocialiteProviders\Weibo\WeiboExtendSocialite@handle',
             'SocialiteProviders\QQ\QqExtendSocialite@handle',
         ],
-        'Illuminate\Auth\Events\Login' => [
-            'App\Listeners\LoginStoreSession'
-        ]
+        /**
+         * 推荐博客审核通过
+         */
+        'App\Events\SiteAudit' => [
+            'App\Listeners\SendSiteAuditNotification',
+        ],
     ];
 
     /**

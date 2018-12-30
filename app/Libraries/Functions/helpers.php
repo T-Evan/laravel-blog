@@ -185,7 +185,7 @@ if ( !function_exists('re_substr') ) {
 	}
 }
 
-if ( !function_exists('Add_text_water') ) {
+if ( !function_exists('add_text_water') ) {
     /**
      * 给图片添加文字水印
      *
@@ -194,17 +194,19 @@ if ( !function_exists('Add_text_water') ) {
      * @param string $color
      * @return mixed
      */
-    function Add_text_water($file, $text, $color = '#0B94C1') {
-        $image = Image::make($file);
-        $image->text($text, $image->width()-20, $image->height()-30, function($font) use($color) {
-            $font->file(public_path('fonts/msyh.ttf'));
-            $font->size(15);
-            $font->color($color);
-            $font->align('right');
-            $font->valign('bottom');
-        });
-        $image->save($file);
-        return $image;
+    function add_text_water($file, $text, $color = '#0B94C1') {
+        $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        if ($extension !== 'gif') {
+            $image = Image::make($file);
+            $image->text($text, $image->width()-20, $image->height()-30, function($font) use($color) {
+                $font->file(public_path('fonts/msyh.ttf'));
+                $font->size(15);
+                $font->color($color);
+                $font->align('right');
+                $font->valign('bottom');
+            });
+            $image->save($file);
+        }
     }
 }
 
@@ -350,6 +352,20 @@ if (! function_exists('redis')) {
         if (! is_null($expire)) {
             Redis::expire($key, $expire);
         }
+    }
+}
+
+if (! function_exists('is_json')) {
+    /**
+     * 判断字符串是否是json
+     *
+     * @param $json
+     * @return bool
+     */
+    function is_json($json)
+    {
+        json_decode($json);
+        return (json_last_error() == JSON_ERROR_NONE);
     }
 }
 

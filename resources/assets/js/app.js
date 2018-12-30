@@ -39,7 +39,11 @@ require('prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard')
 
 require('pace/pace');
 
+require('fluidbox/dist/js/jquery.fluidbox.min');
+
 require('./home/index');
 
 require('./home/comment');
+
+require('./home/site');
 

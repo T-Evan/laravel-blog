@@ -27,7 +27,7 @@
                 <div class="js-content">{!! $data->html !!}</div>
                 <p class="b-h-20"></p>
                 <p class="b-copyright">
-                    {!! htmlspecialchars_decode($config['COPYRIGHT_WORD']) !!}
+                    {!! htmlspecialchars_decode(config('bjyblog.copyright_word')) !!}
                 </p>
                 <ul class="b-prev-next">
                     <li class="b-prev">
@@ -52,18 +52,18 @@
         </div>
         <!-- 引入通用评论开始 -->
         <script>
-            var userEmail='{{ session('user.email') }}';
+            var userEmail='{{ auth()->guard('oauth')->check() ? auth()->guard('oauth')->user()->email : '' }}';
             tuzkiNumber=1;
         </script>
         <div class="row b-comment">
             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 b-comment-box">
-                <img class="b-head-img" src="@if(empty(session('user.avatar'))){{ asset('images/home/default_head_img.gif') }}@else{{ session('user.avatar') }}@endif" alt="{{ $config['WEB_NAME'] }}" title="{{ $config['WEB_NAME'] }}">
+                <img class="b-head-img" src="@if(auth()->guard('oauth')->check()){{ auth()->guard('oauth')->user()->avatar }}@else{{ asset('images/home/default_head_img.gif') }}@endif" alt="{{ config('bjyblog.web_name') }}" title="{{ config('bjyblog.web_name') }}">
                 <div class="b-box-textarea">
-                    <div class="b-box-content js-hint" @if(session()->has('user'))contenteditable="true" @endif>请先登录后发表评论</div>
+                    <div class="b-box-content js-hint" @if(auth()->guard('oauth')->check())contenteditable="true" @endif>请先登录后发表评论</div>
                     <ul class="b-emote-submit">
                         <li class="b-emote">
                             <i class="fa fa-smile-o js-get-tuzki"></i>
-                            <input class="form-control b-email" type="text" name="email" placeholder="接收回复的email地址" value="{{ session('user.email') }}">
+                            <input class="form-control b-email" type="text" name="email" placeholder="接收回复的email地址" value="{{ auth()->guard('oauth')->check() ? auth()->guard('oauth')->user()->email : '' }}">
                             <div class="b-tuzki">
 
                             </div>
@@ -86,7 +86,10 @@
             @foreach($comment as $k => $v)
                 <div id="comment-{{ $v['id'] }}" class="row b-user b-parent">
                     <div class="col-xs-2 col-sm-1 col-md-1 col-lg-1 b-pic-col">
-                        <img class="b-user-pic js-head-img" src="{{ asset('uploads/avatar/default.jpg') }}" _src="{{ asset($v['avatar']) }}" alt="{{ $config['WEB_NAME'] }}" title="{{ $config['WEB_NAME'] }}">
+                        <img class="b-user-pic js-head-img" src="{{ asset('uploads/avatar/default.jpg') }}" _src="{{ asset($v['avatar']) }}" alt="{{ config('bjyblog.web_name') }}" title="{{ config('bjyblog.web_name') }}">
+                        @if($v['is_admin'] == 1)
+                            <img class="b-crown" src="{{ asset('images/home/crown.png') }}" alt="{{ config('bjyblog.web_name') }}">
+                        @endif
                     </div>
                     <div class="col-xs-10 col-sm-11 col-md-11 col-lg-11 b-content-col b-cc-first">
                         <p class="b-content">
@@ -99,7 +102,10 @@
                         @foreach($v['child'] as $m => $n)
                             <div id="comment-{{ $n['id'] }}" class="row b-user b-child">
                                 <div class="col-xs-2 col-sm-1 col-md-1 col-lg-1 b-pic-col">
-                                    <img class="b-user-pic js-head-img" src="{{ asset('uploads/avatar/default.jpg') }}" _src="{{ asset($n['avatar']) }}" alt="{{ $config['WEB_NAME'] }}" title="{{ $config['WEB_NAME'] }}">
+                                    <img class="b-user-pic js-head-img" src="{{ asset('uploads/avatar/default.jpg') }}" _src="{{ asset($n['avatar']) }}" alt="{{ config('bjyblog.web_name') }}" title="{{ config('bjyblog.web_name') }}">
+                                    @if($n['is_admin'] == 1)
+                                        <img class="b-crown" src="{{ asset('images/home/crown.png') }}" alt="{{ config('bjyblog.web_name') }}">
+                                    @endif
                                 </div>
                                 <ul class="col-xs-10 col-sm-11 col-md-11 col-lg-11 b-content-col">
                                     <li class="b-content">
@@ -140,7 +146,7 @@
         // 定义评论url
         ajaxCommentUrl = "{{ url('comment') }}";
         checkLogin = "{{ url('checkLogin') }}";
-        titleName = '{{ $config['WEB_NAME'] }}';
+        titleName = '{{ config('bjyblog.web_name') }}';
     </script>
     <script src="{{ asset('statics/layer-2.4/layer.js') }}"></script>
 @endsection

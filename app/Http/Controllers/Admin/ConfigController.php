@@ -18,7 +18,61 @@ class ConfigController extends Controller
      */
     public function edit()
     {
-        return view('admin.config.edit');
+        $config = cache('config');
+        $assign = compact('config');
+        return view('admin.config.edit', $assign);
+    }
+
+    /**
+     * 邮箱设置
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @throws \Exception
+     */
+    public function email()
+    {
+        $config = cache('config');
+        $assign = compact('config');
+        return view('admin.config.email', $assign);
+    }
+
+    /**
+     * 第三方登录设置
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @throws \Exception
+     */
+    public function oauth()
+    {
+        $config = cache('config');
+        $assign = compact('config');
+        return view('admin.config.oauth', $assign);
+    }
+
+    /**
+     * QQ群设置
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @throws \Exception
+     */
+    public function qqQun()
+    {
+        $config = cache('config');
+        $assign = compact('config');
+        return view('admin.config.qqQun', $assign);
+    }
+
+    /**
+     * 备份
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @throws \Exception
+     */
+    public function backup()
+    {
+        $config = cache('config');
+        $assign = compact('config');
+        return view('admin.config.backup', $assign);
     }
 
     /**
@@ -31,16 +85,16 @@ class ConfigController extends Controller
     public function update(Request $request, Config $configModel)
     {
         $data = $request->except('_token');
-        if ($request->hasFile('QQ_QUN_OR_CODE')) {
-            $file = upload('QQ_QUN_OR_CODE', 'uploads/images', false);
+        if ($request->hasFile('153')) {
+            $file = upload('153', 'uploads/images', false);
             $result = $file['status_code'] === 200 ? '/uploads/images/'.$file['data']['new_name']: '';
-            $data['QQ_QUN_OR_CODE'] = $result;
+            $data['153'] = $result;
         }
         $editData = [];
         foreach ($data as $k => $v) {
             $editData[] = [
-                'name' => $k,
-                'value' => $v
+                'id' => $k,
+                'value' => is_array($v) ? json_encode($v) : $v
             ];
         }
         $result = $configModel->updateBatch($editData);
@@ -48,7 +102,7 @@ class ConfigController extends Controller
             // 更新缓存
             Cache::forget('config');
         }
-        return redirect('admin/config/edit');
+        return redirect()->back();
     }
 
     /**

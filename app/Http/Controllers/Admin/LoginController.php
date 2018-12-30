@@ -32,8 +32,8 @@ class LoginController extends Controller
      */
     public function logout()
     {
-        Auth::logout();
-        session()->forget('user');
+        Auth::guard('admin')->logout();
+        Auth::guard('oauth')->logout();
         return redirect('admin/login/index');
     }
 

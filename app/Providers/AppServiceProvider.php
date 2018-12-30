@@ -19,62 +19,46 @@ use Illuminate\Support\ServiceProvider;
 use DB;
 use Illuminate\Database\QueryException;
 use Artisan;
+use Exception;
+use Auth;
 
 class AppServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap any application services.
      *
-     * @return void
+     * @return void|bool
+     * @throws Exception
      */
     public function boot()
     {
-        ini_set('memory_limit', "256M");
-        //分配前台通用的数据
-	\URL::forceScheme('https');
-        view()->composer('home/*', function($view){
-            $category = Cache::remember('common:category', 10080, function () {
-                // 获取分类导航
-                return Category::select('id', 'name')->orderBy('sort')->get();
-            });
+        ini_set('memory_limit', "512M");
 
-            $tag = Cache::remember('common:tag', 10080, function () {
-                // 获取标签下的文章数统计
-                return Tag::has('articles')->withCount('articles')->get();
+        // 为了防止 git clone 后 composer install
+        // 因为还没运行迁移 php artisan package:discover 报错的问题
+        // 如果表不存在则不再向下执行
+        try {
+            // 获取配置项
+            $config = Cache::remember('config', 10080, function () {
+                return Config::where('id', '>', 100)->pluck('value','name');
             });
+        } catch (Exception $exception) {
+            return true;
+        }
 
-            $topArticle = Cache::remember('common:topArticle', 10080, function () {
-                // 获取置顶推荐文章
-                return Article::select('id', 'title')
-                    ->where('is_top', 1)
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-            });
+        /**
+         * 如果已经执行了 migrate ；
+         * 当再当执行 db:seed 的时候上面的 try 并不会触发错误
+         * 而是缓存了一个空的 config
+         * 所以此处需要清空缓存并不再向下执行
+         */
+        if ($config->isEmpty()) {
+            cache()->forget('config');
+            return true;
+        }
 
-            $newComment = Cache::remember('common:newComment', 10080, function () {
-                // 获取最新评论
-                $commentModel = new Comment();
-                return $commentModel->getNewData();
-            });
-
-            $friendshipLink = Cache::remember('common:friendshipLink', 10080, function () {
-                // 获取友情链接
-                return FriendshipLink::select('name', 'url')
-                    ->orderBy('sort')
-                    ->get();
-            });
-
-            $nav = Cache::remember('common:nav', 10080, function () {
-                // 获取菜单
-                return Nav::select('name', 'url')
-                    ->orderBy('sort')
-                    ->get();
-            });
-
-            // 分配数据
-            $assign = compact('category', 'tag', 'topArticle', 'newComment', 'friendshipLink', 'nav');
-            $view->with($assign);
-        });
+        // 动态替换 /config 目录下的配置项
+        config($config->toArray());
 
         // 开源项目数据
         view()->composer(['layouts/home', 'home/index/git'], function($view){
@@ -114,48 +98,59 @@ class AppServiceProvider extends ServiceProvider
             $view->with($assign);
         });
 
-        // 使用 try catch 是为了解决 composer install 时候触发 php artisan optimize 但此时无数据库的问题
-        try {
-            // 获取配置项
-            $config = Cache::remember('config', 10080, function () {
-                return Config::pluck('value','name');
+        //分配前台通用的数据
+        view()->composer('layouts/home', function($view){
+            $category = Cache::remember('common:category', 10080, function () {
+                // 获取分类导航
+                return Category::select('id', 'name')->orderBy('sort')->get();
             });
-            // 解决初次安装时候没有数据引起报错
-            if ($config->isEmpty()) {
-                Artisan::call('cache:clear');
-            } else {
-                // 用 config 表中的配置项替换 /config/ 目录下文件中的配置项
-                $serviceConfig = [
-                    'services.github.client_id' => $config['GITHUB_CLIENT_ID'],
-                    'services.github.client_secret' => $config['GITHUB_CLIENT_SECRET'],
 
-                    'services.qq.client_id' => $config['QQ_APP_ID'],
-                    'services.qq.client_secret' => $config['QQ_APP_KEY'],
+            $tag = Cache::remember('common:tag', 10080, function () {
+                // 获取标签下的文章数统计
+                return Tag::has('articles')->withCount('articles')->get();
+            });
 
-                    'services.weibo.client_id' => $config['SINA_API_KEY'],
-                    'services.weibo.client_secret' => $config['SINA_SECRET'],
-                ];
-                config($serviceConfig);
-            }
-        } catch (QueryException $e) {
-            // 此处清除缓存是为了解决上面无数据库时缓存时 config 缓存了空数据 db:seed 后 config 走了缓存为空的问题
-            Artisan::call('cache:clear');
-            $config = [];
-        }
-        // 分配全站通用的数据
-        view()->composer('*', function ($view) use($config) {
-            $assign = [
-                'config' => $config
-            ];
+            $topArticle = Cache::remember('common:topArticle', 10080, function () {
+                // 获取置顶推荐文章
+                return Article::select('id', 'title')
+                    ->where('is_top', 1)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            });
+
+            $newComment = Cache::remember('common:newComment', 10080, function () {
+                // 获取最新评论
+                $commentModel = new Comment();
+                return $commentModel->getNewData();
+            });
+
+            $friendshipLink = Cache::remember('common:friendshipLink', 10080, function () {
+                // 获取友情链接
+                return FriendshipLink::select('name', 'url')
+                    ->orderBy('sort')
+                    ->get();
+            });
+
+            $nav = Cache::remember('common:nav', 10080, function () {
+                // 获取菜单
+                return Nav::select('name', 'url')
+                    ->orderBy('sort')
+                    ->get();
+            });
+
             // 获取赞赏捐款文章
-            if (!empty($config['QQ_QUN_ARTICLE_ID'])) {
-                $qqQunArticle = Cache::remember('qqQunArticle', 10080, function () use($config) {
-                    return Article::select('id', 'title')->where('id', $config['QQ_QUN_ARTICLE_ID'])->first();
+            $qunArticleId = config('bjyblog.qq_qun.article_id');
+            if (empty($qunArticleId)) {
+                $qqQunArticle = [];
+            } else {
+                $qqQunArticle = Cache::remember('qqQunArticle', 10080, function () use($qunArticleId) {
+                    return Article::select('id', 'title')->where('id', $qunArticleId)->first();
                 });
-                $assign['qqQunArticle'] = $qqQunArticle;
             }
-            $view->with($assign);
 
+            // 分配数据
+            $assign = compact('category', 'tag', 'topArticle', 'newComment', 'friendshipLink', 'nav', 'qqQunArticle');
+            $view->with($assign);
         });
     }
 

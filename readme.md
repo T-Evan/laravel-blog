@@ -1,6 +1,7 @@
 
 - 博客：[https://blog.uliuli.fun](https://blog.uliuli.fun)   
 
+[![Build Status](https://travis-ci.com/baijunyao/laravel-bjyblog.svg?branch=master)](https://travis-ci.com/baijunyao/laravel-bjyblog)
 ## 简介
 项目基于 [laravel-bjyblog](https://github.com/baijunyao/laravel-bjyblog) ；  
 

@@ -401,6 +401,8 @@ a{
 
 /* 主体部分开始 */
 #b-content{
+  position: relative;
+  z-index: 1;
   .b-tag-title{
     margin-bottom: 10px;
     background: #fff;
@@ -462,16 +464,26 @@ a{
         margin-right: 5px;
       }
     }
-    .b-oa-pic{
-      padding: 3px;
-      width: 100%;
-      height: auto;
-      border: 1px solid #CCC;
-      overflow: hidden;
-      img{
-        width: 220px;
-        height: 150px;
-      }
+    .b-oa-thumbnail{
+        position: relative;
+        .b-oa-pic{
+            padding: 3px;
+            width: 100%;
+            height: auto;
+            border: 1px solid #CCC;
+            overflow: hidden;
+            img{
+                width: 220px;
+                height: 150px;
+            }
+        }
+        .b-top-icon{
+            position: absolute;
+            left: 15px;
+            top: 0;
+            width: 50px;
+            height: 50px;
+        }
     }
     .b-style1{
       img{
@@ -566,6 +578,24 @@ a{
             p {
               margin: 0;
             }
+          }
+        }
+        table {
+          width: 100%;
+          max-width: 100%;
+          margin-bottom: 20px;
+          background-color: transparent;
+          border-collapse: collapse;
+          border-spacing: 0;
+          tbody tr:nth-of-type(2n+1) {
+            background-color: #f9f9f9;
+          }
+          tr:hover {
+            background-color: #f9f9f9;
+          }
+          th, td {
+            padding: 0 5px;
+            border: 1px solid #ddd;
           }
         }
       }
@@ -719,12 +749,19 @@ a{
         padding-top: 10px;
         height: 100%;
         .b-pic-col{
+            position: relative;
           .b-user-pic{
             width: 45px;
             height: 45px;
-
           }
-
+          .b-crown{
+              position: absolute;
+              left: 2px;
+              top: -12px;
+              width: 25px;
+              height: 25px;
+              transform: rotate(-50deg);
+          }
         }
         .b-content-col{
           .b-content{
@@ -879,6 +916,61 @@ a{
   /* 随言碎语结束 */
 }
 /* 主体部分结束 */
+
+#b-content-site {
+  .b-site {
+    padding: 0 10px 10px 0;
+    position: relative;
+    .b-s-inside {
+      padding: 10px;
+      background: #fff;
+      box-shadow: 0 1px 2px 0 #e2e2e2;
+      text-align: center;
+      .b-si-name {
+        height: 20px;
+        line-height: 20px;
+        overflow: hidden;
+        font-weight: 600;
+        color: #666;
+      }
+      .b-si-url {
+        height: 40px;
+        line-height: 40px;
+        overflow: hidden;
+        color: #666;
+      }
+      .b-si-description {
+        height: 40px;
+        line-height: 20px;
+        overflow: hidden;
+        color: #999;
+      }
+      .b-s-plus {
+        margin: 0 auto;
+        width: 100px;
+        height: 100px;
+      }
+    }
+  }
+  .b-s-url {
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+  }
+}
+
+#b-modal-site {
+  .b-submit-site {
+    padding-top: 20px;
+  }
+  .b-hint {
+    font-size: 14px;
+    color: #999;
+  }
+}
 
 /* 通用登录框开始 */
 #b-modal-login{

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
@@ -29,12 +30,12 @@ class AdminController extends Controller
     protected $redirectTo = '/admin/index/index';
 
     /**
-     * 显示登录页面
+     * 使用 admin guard
      *
-     * @return mixed
+     * @return \Illuminate\Contracts\Auth\Guard
      */
-    public function index()
+    protected function guard()
     {
-        return view('login.public.index');
+        return Auth::guard('admin');
     }
 }

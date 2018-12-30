@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>@yield('title')@if(request()->path() !== '/') - {{ $config['WEB_TITLE'] }} @endif</title>
+    <title>@yield('title')@if(request()->path() !== '/') - {{ config('bjyblog.head.title') }} @endif</title>
     <meta name="keywords" content="@yield('keywords')" />
     <meta name="description" content="@yield('description')" />
     <meta http-equiv="Cache-Control" content="no-siteapp" />
-    <meta name="author" content="baijunyao,{{ htmlspecialchars_decode($config['ADMIN_EMAIL']) }}">
+    <meta name="author" content="baijunyao,{{ htmlspecialchars_decode(config('bjyblog.admin_email')) }}">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ mix('css/app.css') }}">
@@ -29,7 +29,7 @@
                     <li class="b-lc-start">&lt;?php</li>
                     <li class="b-lc-echo">echo</li>
                 </ul>
-                <p class="b-logo-word">'{{ $config['WEB_NAME'] }}'</p>
+                <p class="b-logo-word">'{{ config('bjyblog.web_name') }}'</p>
                 <p class="b-logo-end">;</p>
             </a>
         </div>
@@ -51,16 +51,16 @@
                 @endforeach
             </ul>
             <ul id="b-login-word" class="nav navbar-nav navbar-right">
-                @if(empty(session('user.name')))
+                @if(auth()->guard('oauth')->check())
+                    <li class="b-user-info">
+                        <span><img class="b-head_img" src="{{ auth()->guard('oauth')->user()->avatar }}" alt="{{ auth()->guard('oauth')->user()->name }}" title="{{ auth()->guard('oauth')->user()->name }}" /></span>
+                        <span class="b-nickname">{{ auth()->guard('oauth')->user()->name }}</span>
+                        <span><a href="{{ url('auth/oauth/logout') }}">退出</a></span>
+                    </li>
+                @else
                     <li class="b-nav-cname b-nav-login">
                         <div class="hidden-xs b-login-mobile"></div>
                         <a class="js-login-btn" href="javascript:;">登录</a>
-                    </li>
-                @else
-                    <li class="b-user-info">
-                        <span><img class="b-head_img" src="{{ session('user.avatar') }}" alt="{{ session('user.name') }}" title="{{ session('user.name') }}" /></span>
-                        <span class="b-nickname">{{ session('user.name') }}</span>
-                        <span><a href="{{ url('auth/oauth/logout') }}">退出</a></span>
                     </li>
                 @endif
             </ul>
@@ -77,27 +77,28 @@
         <!-- 通用右部区域开始 -->
         <div id="b-public-right" class="col-lg-4 hidden-xs hidden-sm hidden-md">
             <div class="b-search">
-                <form class="form-inline"  role="form" action="{{ url('search') }}" method="get">
+                <form class="form-inline" role="form" action="{{ url('search') }}" method="post">
+                    {{ csrf_field() }}
                     <input class="b-search-text" type="text" name="wd">
                     <input class="b-search-submit" type="submit" value="全站搜索">
                 </form>
             </div>
-            @if(!empty($config['QQ_QUN_NUMBER']))
+            @if(!empty(config('bjyblog.qq_qun.number')))
                 <div class="b-qun">
                     <h4 class="b-title">加入组织</h4>
                     <ul class="b-all-tname">
                         <li class="b-qun-or-code">
-                            <img src="{{ asset($config['QQ_QUN_OR_CODE']) }}" alt="QQ">
+                            <img src="{{ asset(config('bjyblog.qq_qun.or_code')) }}" alt="QQ">
                         </li>
                         <li class="b-qun-word">
                             <p class="b-qun-nuber">
                                 1. 手Q扫左侧二维码
                             </p>
                             <p class="b-qun-nuber">
-                                2. 搜Q群：{{ $config['QQ_QUN_NUMBER'] }}
+                                2. 搜Q群：{{ config('bjyblog.qq_qun.number') }}
                             </p>
                             <p class="b-qun-code">
-                                3. 点击{!! $config['QQ_QUN_CODE'] !!}
+                                3. 点击{!! config('bjyblog.qq_qun.code') !!}
                             </p>
                             <p class="b-qun-article">
                                 @if(!empty($qqQunArticle['id']))
@@ -154,6 +155,7 @@
                     @foreach($friendshipLink as $v)
                         <a class="b-link-a" href="{{ $v->url }}" target="_blank"><span class="fa fa-link b-black"></span> {{ $v->name }}</a>
                     @endforeach
+                        <a class="b-link-a" href="{{ url('site') }}"><span class="fa fa-link b-black"></span> 更多 </a>
                 </p>
             </div>
         </div>
@@ -169,13 +171,12 @@
             <dl class="col-xs-12 col-sm-6 col-md-4 col-lg-4">
                 <dt>权益</dt>
                 <dd>许可协议：<a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh">CC BY-NC 4.0</a></dd>
-                <dd>© 2014-2018 {{ parse_url(config('app.url'))['host'] }} 版权所有 @if(!empty($config['WEB_ICP_NUMBER'])) ICP证：{{ $config['WEB_ICP_NUMBER'] }} @endif
-                </dd>
-                @if(!empty($config['WEB_ICP_NUMBER']))
-                    <dd>网站备案：{{ $config['WEB_ICP_NUMBER'] }}</dd>
+                <dd>版权所有：© 2014-{{ date('Y') }} {{ parse_url(config('app.url'))['host'] }}</dd>
+                @if(!empty(config('bjyblog.icp')))
+                    <dd>网站备案：{{ config('bjyblog.icp') }}</dd>
                 @endif
-                @if(!empty($config['ADMIN_EMAIL']))
-                    <dd>联系邮箱：<a href="mailto:{!! $config['ADMIN_EMAIL'] !!}">{!! $config['ADMIN_EMAIL'] !!}</a></dd>
+                @if(!empty(config('bjyblog.admin_email')))
+                    <dd>联系邮箱：<a href="mailto:{!! config('bjyblog.admin_email') !!}">{!! config('bjyblog.admin_email') !!}</a></dd>
                 @endif
             </dl>
 
@@ -233,7 +234,7 @@
 
 <script src="{{ mix('js/app.js') }}"></script>
 <!-- 百度统计开始 -->
-{!! htmlspecialchars_decode($config['WEB_STATISTICS']) !!}
+{!! htmlspecialchars_decode(config('bjyblog.statistics')) !!}
 <!-- 百度统计结束 -->
 @yield('js')
 </body>
