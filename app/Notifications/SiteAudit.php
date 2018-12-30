@@ -45,7 +45,7 @@ class SiteAudit extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->line('你在白俊遥博客申请的推荐博客已经通过审核。')
+            ->line('你在汤一碗博客申请的推荐博客已经通过审核。')
             ->action('点击查看详情', url('site'));
     }
 

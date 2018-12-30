@@ -312,8 +312,8 @@ class IndexController extends Controller
                 ->get();
         });
         $feed = App::make("feed");
-        $feed->title = '白俊遥';
-        $feed->description = '白俊遥博客';
+        $feed->title = '汤一碗';
+        $feed->description = '汤一碗博客';
         $feed->logo = 'https://baijunyao.com/uploads/avatar/1.jpg';
         $feed->link = url('feed');
         $feed->setDateFormat('carbon');
